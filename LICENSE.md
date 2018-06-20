@@ -1,0 +1,1 @@
+O autor permite visualização e utilização do código
