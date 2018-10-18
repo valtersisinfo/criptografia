@@ -11,31 +11,43 @@
   <script src="src/criptografia.js"></script>
 </head>
 <body>
-  <div id="unidirecional">
-    <h3>Criptografia Unidirecional - Recomendo usar para senhas</h3>
-    <div>
-      Digite o que deseja criptografar: <input id="senha" type="text"><br>
-      <span id="sha1"></span>
-      <span id="bcript"></span>
-    </div>
-    <div id="validar" style="display:none;margin-top:15px;">
-      Digite o que for criptografado anteriormente: <input id="valida" type="text"><br>
-      <span id="sha1"></span>
-      <span id="resultado"></span>
+
+  <div id="hash">
+    <h3>Criptografia por HASH - Para armazenar senha de maneira simples - Não é o mais seguro</h3>
+    Digite uma senha: <input id="senha" type="password"></input><br>
+    Selecione algum tipo de hash: <select id="hashes"></select>
+    <div id="resultado"></div>
+  </div>
+
+  <div id="blowfish">
+    <h3>Criptografia BlueFish - Para armazenar senhas com mais segurança</h3>
+    <div id="criar">
+      Digite uma senha <input id="senha" type="password">
+      <div id="informacao"></div>
+      <div id="criptografado"></div>
+    </div><br>
+    <div id="validar">
+      <div>Digite a chave salva no banco <input id="criptografado" type="text"></div>
+      <div>Digite novamente a senha <input id="valida" type="password"></div>
+      <div id="informacao"></div>
+      <div id="resultado"></div>
     </div>
   </div>
-  <div id="bidirecional">
-    <h3>Criptografia Bidirecional - Usar para comunicação</h3>
-    <div>
-      Digite o que deseja criptografar: <input id="senha" type="text"><br>
-      <span id="sha1"></span>
-      <span id="bcript"></span>
-    </div>
-    <div id="validar" style="display:none;margin-top:15px;">
-      Digite o que for criptografado anteriormente: <input id="valida" type="text"><br>
-      <span id="sha1"></span>
-      <span id="resultado"></span>
+
+  <div id="simetrica">
+    <h3>Criptografia Simétrica - Para comunicação (Criptação/Encriptação)</h3>
+    <div id="criar">
+      Digite uma mensagem: <input id="mensagem"></input><br>
+      Selecione um metodo: <select id="metodo"></select>
+      <div id="resultado"></div>
+    </div><br>
+    <div id="validar">
+      Cole a mensagem criptografada: <input id="criptografado"></input><br>
+      Digite novamente a chave: <input id="chave"></input><br>
+      Selecione novamente o metodo: <select id="metodo"></select>
+      <div id="resultado"></div>
     </div>
   </div>
+
 </body>
 </html>

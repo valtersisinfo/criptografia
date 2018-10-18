@@ -1,9 +1,13 @@
 # Criptografia
 Criptografar e descriptografar nunca foi tão simples
 
-* Hash
-* Salt
-* Chave
+Em src/criptografia.php é possível encontrar as seguintes funções
+
+* salt
+* blowfish
+* validarBlowfish
+* encrypt
+* decrypt
 
 
 
