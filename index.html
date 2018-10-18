@@ -11,17 +11,31 @@
   <script src="src/criptografia.js"></script>
 </head>
 <body>
-  <h3>Criptografia Unidirecional - Usar para senhas</h3>
-  <div>
-    Digite o que deseja criptografar: <input id="senha" type="text"><br>
-    <span id="sha1"></span><br>
-    <span id="bcript"></span><br>
+  <div id="unidirecional">
+    <h3>Criptografia Unidirecional - Recomendo usar para senhas</h3>
+    <div>
+      Digite o que deseja criptografar: <input id="senha" type="text"><br>
+      <span id="sha1"></span>
+      <span id="bcript"></span>
+    </div>
+    <div id="validar" style="display:none;margin-top:15px;">
+      Digite o que for criptografado anteriormente: <input id="valida" type="text"><br>
+      <span id="sha1"></span>
+      <span id="resultado"></span>
+    </div>
   </div>
-  <div id="validar" style="display:none;margin-top:15px;">
-    Digite a senha novamente para validar: <input id="valida" type="text"><br>
-    <span id="sha1"></span><br>
-    <span id="resultado"></span><br>
+  <div id="bidirecional">
+    <h3>Criptografia Bidirecional - Usar para comunicação</h3>
+    <div>
+      Digite o que deseja criptografar: <input id="senha" type="text"><br>
+      <span id="sha1"></span>
+      <span id="bcript"></span>
+    </div>
+    <div id="validar" style="display:none;margin-top:15px;">
+      Digite o que for criptografado anteriormente: <input id="valida" type="text"><br>
+      <span id="sha1"></span>
+      <span id="resultado"></span>
+    </div>
   </div>
-  <h3>Criptografia Bidirecional - Usar para comunicação</h3>
 </body>
 </html>

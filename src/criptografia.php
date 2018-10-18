@@ -18,21 +18,15 @@
     // 13 - https://www.dicionariodesimbolos.com.br/numero-13/
     $custo = "13";
 
-    // Salt - Dado aleatório
-    // Definir Salt sem informação
-    $salt = "";
-    // Definir o tamanho do salt (22 caracteres para usar no BCript)
-    $tamanhoSalt = 22;
-    // Criar um array de amostra com 62 caracteres (a-z, A-Z, 0-9)
-    $amostra = array_merge(range("a", "z"),range("A", "Z"),range("0", "9"));
-    // Embaralhar a amostra
-    shuffle($amostra);
-    // Obter itens aleatórios da amostra
-    $aleatorio = array_rand($amostra, $tamanhoSalt);
-    // For para pecorrer a amostra e obter uma letra ou número aleatório
-    for ($i = 0; $i < $tamanhoSalt; $i++){
-      $salt .= $amostra[$aleatorio[$i]];
-    }
+    // Salt - Dado aleatório - Respeitar 22 digitos - pattern: ./A-Za-z0-9
+    // Gerar uma string pseudo-aleatória de bytes
+    $string = openssl_random_pseudo_bytes(22);
+    // Codificar o pseugo-aleatório para a base 64
+    $base64 = base64_encode($string);
+    // Obter apenas os primeiros 22 dígitos
+    $substr = substr($base64, 0, 22);
+    // Substituir + por .
+    $salt = str_replace("+", ".", $substr);
 
     // BCript/Blowfish - Encriptação por custo de processamento
     // $2a$ = Codificação BCript/Blowfish para obter 64 caracteres
