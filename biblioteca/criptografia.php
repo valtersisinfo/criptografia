@@ -62,44 +62,44 @@
     // Metodo que será utilizado
     $metodo = $parametros->metodo;
     // Chave para comunicação
-    $chave = openssl_random_pseudo_bytes(22);
-    // Opções a ser utilizada
-    // OPENSSL_RAW_DATA ou OPENSSL_ZERO_PADDING.
-    $opcao = OPENSSL_RAW_DATA;
+    $parametros->quantidade = 22;
+    $chave = salt($parametros);
+    // Opção a ser utilizada base64 = 0
+    $opcao = 0;
     // Vetor de inicialização
     $vilen = openssl_cipher_iv_length($metodo);
-    $vi = openssl_random_pseudo_bytes($vilen);
+    $parametros->quantidade = $vilen;
+    $vi = salt($parametros);
     // Encriptação dos dados
     $encrypt = openssl_encrypt($dados, $metodo, $chave, $opcao, $vi);
-     // Retornar o resultado
+    // Retornar o resultado
     $retorno = new stdClass();
     $retorno->encriptado = $encrypt;
-    $retorno->chave = $chave;
+    $retorno->chave = $chave.$vi;
     return $retorno;
   }
 
-  function decriptacaoSimetrica($parametros) {
-    // Dados a serem decriptados
-    $dados = $parametros->dados;
-    var_dump($dados);
+  function descriptacaoSimetrica($parametros) {
     // Metodo que será utilizado
     $metodo = $parametros->metodo;
-    var_dump($metodo);
-    // Chave para comunicação
-    $chave = $parametros->chave;
-    var_dump($chave);
-    // Opções a ser utilizada
-    // OPENSSL_RAW_DATA ou OPENSSL_ZERO_PADDING.
-    $opcao = OPENSSL_RAW_DATA;
     // Vetor de inicialização
-    $vilen = openssl_cipher_iv_length($metodo);
-    $vi = openssl_random_pseudo_bytes($vilen);
-    // Decriptação dos dados
-    $decrypt = openssl_decrypt($dados, $metodo, $chave, $opcao, $vi);
-    var_dump($decrypt);
-    // Retornar o resultado
+    $vi = substr($parametros->chave, 22);
+    // Classe de retorno
     $retorno = new stdClass();
-    $retorno->decriptado = $decrypt;
+    $retorno->descriptado = false;
+    // Verifica se bate o tamanho do vetor de inicialização
+    if (strlen($vi) == openssl_cipher_iv_length($metodo)) {
+      // Dados a serem descriptados
+      $dados = $parametros->dados;
+      // Chave para comunicação
+      $chave = substr($parametros->chave, 0, 22);
+      // Opção a ser utilizadad
+      $opcao = 0;
+      // Descriptação dos dados
+      $decrypt = openssl_decrypt($dados, $metodo, $chave, $opcao, $vi);
+      // Retorna a descriptação
+      $retorno->descriptado = $decrypt;
+    }
     return $retorno;
   }
 

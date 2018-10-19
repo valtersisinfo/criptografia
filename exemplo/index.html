@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Criptografia</title>
+  <title>Criptografia - Exemplo</title>
   <script
   src="https://code.jquery.com/jquery-3.3.1.js"
   integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
   crossorigin="anonymous"></script>
-  <script src="src/criptografia.js"></script>
+  <script src="criptografia.js"></script>
 </head>
 <body>
 
@@ -35,19 +35,32 @@
   </div>
 
   <div id="simetrica">
-    <h3>Criptografia Simétrica - Para comunicação (Criptação/Encriptação)</h3>
+    <h3>Criptografia Simétrica - Para comunicação (Encriptação/Descriptação)</h3>
     <div id="criar">
       Digite uma mensagem: <input id="mensagem"></input><br>
-      Selecione um metodo: <select id="metodo"></select>
+      Escolha um metodo: <select id="metodo"></select>
       <div id="resultado"></div>
     </div><br>
     <div id="validar">
       Cole a mensagem criptografada: <input id="criptografado"></input><br>
-      Digite novamente a chave: <input id="chave"></input><br>
+      Cole a chave: <input id="chave"></input><br>
       Selecione novamente o metodo: <select id="metodo"></select>
       <div id="resultado"></div>
     </div>
   </div>
+
+  <!--
+  <div id="assimetrica">
+    <h3>Criptografia Assimétrica</h3>
+    <div id="criar">
+      Link: http://php.net/manual/en/function.openssl-dh-compute-key.php
+      No terminal digite:
+      <blockquote>sudo openssl dhparam -out dhparam.pem 2048<br>
+      sudo openssl dh -in dhparam.pem -noout  -text<br>
+      sudo openssl genpkey -paramfile dhparam.pem -out privatekey.pem<br>
+      sudo openssl pkey -in privatekey.pem -pubout -out publickey.pem</blockquote>
+    </div>
+  </div> -->
 
 </body>
 </html>

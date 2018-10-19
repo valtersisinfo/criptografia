@@ -2,7 +2,7 @@ $(document).ready(function() {
 
   // Select com hash
   $.ajax({
-    url: "src/criptografia.php",
+    url: "../biblioteca/criptografia.php",
     method: "POST",
     data: {
       funcao: "listarHash",
@@ -19,7 +19,7 @@ $(document).ready(function() {
 
   // Select com metodos
   $.ajax({
-    url: "src/criptografia.php",
+    url: "../biblioteca/criptografia.php",
     method: "POST",
     data: {
       funcao: "listarMetodos",
@@ -40,7 +40,7 @@ $(document).ready(function() {
     if (criptografar != "") {
       var hash = $("#hash #hashes option:selected").html();
       $.ajax({
-        url: "src/criptografia.php",
+        url: "../biblioteca/criptografia.php",
         method: "POST",
         data: {
           funcao: "pegarHash",
@@ -79,7 +79,7 @@ $(document).ready(function() {
     var base64 = btoa(criptografar);
     $("#blowfish #criar #informacao").html("Senha enviada para o servidor - btoa(\"" + criptografar + "\") = " + base64 + " (Confira apertando F12 / Network)<br>");
     $.ajax({
-      url: "src/criptografia.php",
+      url: "../biblioteca/criptografia.php",
       method: "POST",
       data: {
         funcao: "blowfish",
@@ -113,7 +113,7 @@ $(document).ready(function() {
       $("#blowfish #validar #informacao").html("Senha enviada para o servidor - btoa(\"" + validar + "\") = "+base64);
       $.ajax(
       {
-        url: "src/criptografia.php",
+        url: "../biblioteca/criptografia.php",
         method: "POST",
         data: {
           funcao: "blowfish",
@@ -141,7 +141,7 @@ $(document).ready(function() {
     var metodo = $("#simetrica #criar #metodo option:selected").html();
     $.ajax(
     {
-      url: "src/criptografia.php",
+      url: "../biblioteca/criptografia.php",
       method: "POST",
       data: {
         funcao: "encriptacaoSimetrica",
@@ -162,15 +162,16 @@ $(document).ready(function() {
   });
 
   $("#simetrica #validar #criptografado").on("keyup", function() {
+    $("#simetrica #validar #resultado").html("");
     var dados = $(this).val();
     var metodo = $("#simetrica #validar #metodo option:selected").html();
     var chave = $("#simetrica #validar #chave").val();
     $.ajax(
     {
-      url: "src/criptografia.php",
+      url: "../biblioteca/criptografia.php",
       method: "POST",
       data: {
-        funcao: "decriptacaoSimetrica",
+        funcao: "descriptacaoSimetrica",
         parametros: {
           dados: dados,
           metodo: metodo,
@@ -179,7 +180,8 @@ $(document).ready(function() {
       },
       dataType: "json",
       success: function(data, textStatus, jqXHR){
-        $("#simetrica #validar #resultado").html(data.decriptado);
+        if (data.descriptado != false) $("#simetrica #validar #resultado").html("Descriptografado a mensagem: "+data.descriptado);
+        else $("#simetrica #validar #resultado").html("Mensagem e/ou chave está(ão) incorreta(s)!");
       },
       error: function(data)
       {

@@ -1,13 +1,17 @@
-# Criptografia
+# Criptografia Orientada a Objeto
 Criptografar e descriptografar nunca foi tão simples
 
-Em src/criptografia.php é possível encontrar as seguintes funções
-
+Pasta biblioteca - Local onde fica todas as funções:
 * salt
 * blowfish
-* validarBlowfish
-* encrypt
-* decrypt
+* encriptacaoSimetrica
+* descriptacaoSimetrica
+* pegarHash
+* listarMetodos
+* listarHash
 
+Pasta exemplo - Exemplos de uso
+
+Pasta criando - Nada
 
 
