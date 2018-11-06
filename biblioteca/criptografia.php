@@ -103,6 +103,33 @@
     return $retorno;
   }
 
+  function encriptacaoHexadecimal ($parametros)
+  {
+    $letras =  str_split($descriptografado, 1);
+    $criptografia = "";
+    foreach ($letras as $letra) {
+      $ascii = ord($letra);
+      $hexadecimal = dechex($ascii);
+      if (strlen($hexadecimal) == 1) $hexadecimal = "0".$hexadecimal;
+      $criptografia .= $hexadecimal;
+    }
+    $criptografado = base64_encode($criptografia);
+    return $criptografado;
+  }
+
+  function descriptacaoHexadecimal ($criptografado)
+  {
+    $criptografia = base64_decode($criptografado);
+    $hexadecimais =  str_split($criptografia, 2);
+    $descriptografado = "";
+    foreach ($hexadecimais as $hexadecimal) {
+      $decimal = hexdec($hexadecimal);
+      $letra = chr($decimal);
+      $descriptografado .= $letra;
+    }
+    return $descriptografado;
+  }
+
   function pegarHash($parametros) {
     // Hash requerido
     $hash = $parametros->hash;
