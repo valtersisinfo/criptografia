@@ -47,6 +47,14 @@
       Selecione novamente o metodo: <select id="metodo"></select>
       <div id="resultado"></div>
     </div>
+
+    <ul>
+      <li>O ECB não deve ser usado se estiver criptografando mais de um bloco de dados com a mesma chave.</li>
+      <li>CBC, OFB e CFB são semelhantes, no entanto OFB / CFB é melhor para quem só precisa de criptografia e não descriptografia, o que pode economizar espaço de código.</li>
+      <li>A CTR é usada se você quiser uma boa paralelização (ou seja, velocidade), em vez de CBC / OFB / CFB.</li>
+      <li>O modo XTS é o mais comum se você estiver codificando um dado acessível aleatório (como um disco rígido ou RAM).</li>
+      <li>O OCB é de longe o melhor modo, pois permite criptografia e autenticação em uma única passagem.</li>
+    </ul>
   </div>
 
   <!--
