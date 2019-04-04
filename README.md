@@ -12,6 +12,4 @@ Pasta biblioteca - Local onde fica todas as funções:
 
 Pasta exemplo - Exemplos de uso
 
-Pasta criando - Nada
-
 
