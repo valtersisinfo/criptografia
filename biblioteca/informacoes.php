@@ -37,7 +37,9 @@ foreach ($arrayMetodos as $method) {
   $encrypt = openssl_encrypt($mensagem, $method, $key, 0, $iv);
   $decrypt = openssl_decrypt($encrypt, $method, $key, 0, $iv);
 
- 	echo "<tr><td><b>".$method."</b></td><td><b>".$ivlen."</b></td><td>".strlen($encrypt)."</td><td>".$encrypt."</td><td>".$decrypt."</td></tr>";
+  if ($method != "des-ede3-cfb1" && $method != "DES-EDE3-CFB1") {
+ 		echo "<tr><td><b>".$method."</b></td><td><b>".$ivlen."</b></td><td>".strlen($encrypt)."</td><td>".$encrypt."</td><td>".$decrypt."</td></tr>";
+ 	}
 }
 
 echo "</tbody></table><br>";
@@ -46,7 +48,7 @@ echo "<table><tbody>";
 foreach (hash_algos() as $hash)
 {
   $hash_result = hash($hash, $mensagem);
-  echo "<tr><td><b>".$hash."</b></td><td>".strlen($hash_result)."</td><td>".$hash_result."</td></tr>";
+	echo "<tr><td><b>".$hash."</b></td><td>".strlen($hash_result)."</td><td>".$hash_result."</td></tr>";
 }
 echo "</tbody></table>";
 ?>
