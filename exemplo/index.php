@@ -31,7 +31,7 @@
       <div class="col-12">
         <div class="card mt-2">
           <div class="card-header text-center bg-danger text-white">
-            Criptografar com <b>HASH</b>
+            Criptografia com <b>HASH</b> (Não recomendo para senha.)
           </div>
           <div class="card-body">
             <div class="form-group row">
@@ -66,7 +66,7 @@
                 <small id="HSenha" class="form-text text-muted text-right">Digite uma senha.</small>
               </div>
             </div>
-            <p id="PResultadoCriptografiaBlowfish" class="text-center"></p>
+            <p id="PChaveBlowfish" class="text-center"></p>
           </div>
         </div>
       </div>
@@ -173,6 +173,13 @@
                 <small id="HEncriptar2" class="form-text text-muted text-right">Digite um texto.</small>
               </div>
             </div>
+            <div class="form-group row">
+              <label for="IChave4" class="col-form-label col-form-label-sm col-5 col-md-4">Chave: </label>
+              <div class="col-7 col-md-8">
+                <input id="IChave4" type="text" class="form-control form-control-sm" aria-describedby="HChave4" placeholder="Ex. <?php echo $mensagem ?>">
+                <small id="HChave4" class="form-text text-muted text-right">Digite um texto.</small>
+              </div>
+            </div>
             <p id="PResultadoEncriptacaoHexadecimal" class="text-center"></p>
           </div>
         </div>
@@ -185,13 +192,38 @@
           </div>
           <div class="card-body">
             <div class="form-group row">
-              <label for="IEncriptado2" class="col-form-label col-form-label-sm col-5 col-md-4">Encriptar: </label>
+              <label for="IEncriptado2" class="col-form-label col-form-label-sm col-5 col-md-4">Encriptado: </label>
               <div class="col-7 col-md-8">
                 <input id="IEncriptado2" type="text" class="form-control form-control-sm" aria-describedby="HEncriptado2" placeholder="Ex. <?php echo $mensagem ?>">
                 <small id="HEncriptado2" class="form-text text-muted text-right">Digite um texto.</small>
               </div>
             </div>
+            <div class="form-group row">
+              <label for="IChave5" class="col-form-label col-form-label-sm col-5 col-md-4">Chave: </label>
+              <div class="col-7 col-md-8">
+                <input id="IChave5" type="text" class="form-control form-control-sm" aria-describedby="HChave5" placeholder="Ex. <?php echo $mensagem ?>">
+                <small id="HChave5" class="form-text text-muted text-right">Digite um texto.</small>
+              </div>
+            </div>
             <p id="PResultadoDescriptacaoHexadecimal" class="text-center"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card mt-2">
+          <div class="card-header text-center bg-info text-white">
+            Salt (Gera um código randômico)
+          </div>
+          <div class="card-body">
+            <div class="form-group row">
+              <label for="IQuantidade" class="col-form-label col-form-label-sm col-5">Quantidade de caracter: </label>
+              <div class="col-7">
+                <input id="IQuantidade" type="number" class="form-control form-control-sm" aria-describedby="HMensagem" placeholder="Ex. 35">
+                <small id="HQuantidade" class="form-text text-muted text-right">Digite um número inteiro.</small>
+              </div>
+            </div>
+            <p id="PResultadoSalt" class="text-center"></p>
           </div>
         </div>
       </div>
@@ -215,9 +247,7 @@
 
               $arrayMetodos = openssl_get_cipher_methods();
 
-              //$arrayMetodos = ["AES-128-CBC", "AES-128-CBC-HMAC-SHA1", "AES-128-CBC-HMAC-SHA256", "AES-192-CBC", "AES-256-CBC", "AES-256-CBC-HMAC-SHA1", "AES-256-CBC-HMAC-SHA256", "CAMELLIA-128-CBC", "CAMELLIA-192-CBC", "CAMELLIA-256-CBC", "SEED-CBC", "aes-128-cbc", "aes-128-cbc-hmac-sha1", "aes-128-cbc-hmac-sha256", "aes-192-cbc", "aes-256-cbc", "aes-256-cbc-hmac-sha1", "aes-256-cbc-hmac-sha256", "camellia-128-cbc", "camellia-192-cbc", "camellia-256-cbc", "seed-cbc"];
-
-              echo "<table class='table table-dark table-striped table-hover table-sm'>
+              echo "<table class='table table-dark table-striped table-hover table-sm mb-0'>
               <thead>
               <tr>
               <th>Método</th>
@@ -229,25 +259,25 @@
               </thead>
               <tbody>";
 
-
               foreach ($arrayMetodos as $method) {
-                if ($method != "aes-128-ccm" && $method != "aes-128-gcm" && $method != "aes-192-ccm" && $method != "aes-192-gcm" &&
-                  $method != "aes-256-ccm" && $method != "aes-256-gcm" && $method != "id-aes128-CCM" && $method != "id-aes128-GCM" &&
-                  $method != "id-aes192-CCM" && $method != "id-aes192-GCM" && $method != "id-aes256-CCM" && $method != "id-aes256-GCM")
-                {
+
                   // Obter o tamanho iv da cifra
                   $ivlen = openssl_cipher_iv_length($method);
-                  // Gerar uma string pseudo-aleatória de bytes
-                  $iv = openssl_random_pseudo_bytes($ivlen);
 
-                  $encrypt = openssl_encrypt($mensagem, $method, $key, 0, $iv);
-                  $decrypt = openssl_decrypt($encrypt, $method, $key, 0, $iv);
+                  if ($ivlen != 0) {
+                    // Gerar uma string pseudo-aleatória de bytes
+                    if ($iv = @openssl_random_pseudo_bytes($ivlen)) {
+                      if ($encrypt = @openssl_encrypt($mensagem, $method, $key, 0, $iv))
+                      {
+                        $decrypt = openssl_decrypt($encrypt, $method, $key, 0, $iv);
+                        echo "<tr><td><b>".$method."</b></td><td><b>".$ivlen."</b></td><td>".strlen($encrypt)."</td><td>".$encrypt."</td><td>".$decrypt."</td></tr>";
+                      }
+                    }
+                  }
 
-                  echo "<tr><td><b>".$method."</b></td><td><b>".$ivlen."</b></td><td>".strlen($encrypt)."</td><td>".$encrypt."</td><td>".$decrypt."</td></tr>";
-                }
               }
 
-              echo "</tbody></table><br>";
+              echo "</tbody></table>";
 
             ?>
 
@@ -266,7 +296,7 @@
       <div class="card-body p-0" style='height: 400px; overflow-y: scroll; overflow-x: hidden;'>
 
         <?php
-          echo "<table class='table table-dark table-striped table-hover table-sm'>
+          echo "<table class='table table-dark table-striped table-hover table-sm mb-0'>
           <thead>
           <tr>
           <th>HASH</th>
@@ -286,6 +316,14 @@
       </div>
     </div>
   </div>
+
+  <ul>
+    <li>O ECB não deve ser usado se estiver criptografando mais de um bloco de dados com a mesma chave.</li>
+    <li>CBC, OFB e CFB são semelhantes, no entanto OFB / CFB é melhor para quem só precisa de criptografia e não descriptografia, o que pode economizar espaço de disco.</li>
+    <li>A CTR é usada se você quiser uma boa paralelização (ou seja, velocidade), em vez de CBC / OFB / CFB.</li>
+    <li>O modo XTS é o mais comum se você estiver codificando um dado acessível aleatório (como um disco rígido ou RAM).</li>
+    <li>O OCB é de longe o melhor modo, pois permite criptografia e autenticação em uma única passagem.</li>
+  </ul>
 
 </body>
 </html>

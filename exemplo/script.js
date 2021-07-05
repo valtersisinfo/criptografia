@@ -1,23 +1,23 @@
 $(document).ready(function() {
 
-  // Funções de HASH
+  /* HASH */
+  // Função para listar HASH
   $.ajax({
     url: "ajax.php",
     method: "POST",
     data: {
       PFuncao: "listarHash",
-      PParametros: ""
     },
     dataType: "json",
     success: function(data, textStatus, jqXHR) {
       $("#SHash").html("");
-      for (var i = 0; i < data.length; i++) {
-        $("#SHash").append("<option>"+data[i]+"</option>");
+      for (var Vi = 0; Vi < data.listaHash.length; Vi++) {
+        $("#SHash").append("<option>"+data.listaHash[Vi]+"</option>");
       }
     }
   });
 
-  // Ao escrever uma mensagem
+  // Ação para obter HASH da mensagem digitada
   $("#IMensagem").on("keyup", function() {
     if ($("#IMensagem").val() != "") {
       $.ajax({
@@ -32,23 +32,21 @@ $(document).ready(function() {
         },
         dataType: "json",
         success: function(data, textStatus, jqXHR) {
-          $("#PResultadoHash").html("Quantidade de caracteres: " + data.length + "<br>" +
-            "Hash: <b>" + data + "</b>");
+          $("#PResultadoHash").html("Quantidade de caracteres: " + data.criptografado.length + "<br>" +
+            "Hash: <b>" + data.criptografado + "</b>");
         }
       });
     } else
       $("#PResultadoHash").html("");
   });
 
-  // Ao escolher outro hash
+  // Ação para trocar HASH da mensagem digitada
   $("#SHash").on("change", function() {
     $("#IMensagem").trigger("keyup");
   });
 
-  ////////////////////////////////////////////////////////////
-
-  // Funções de Blowfish
-  // Função de criptografia - Ao digitar a senha
+  /* Blowfish */
+  // Função para criar uma chave
   VTempo = "";
   $("#ISenha").on("keyup", function() {
     if ($("#ISenha").val() != "") {
@@ -64,13 +62,13 @@ $(document).ready(function() {
           data: {
             PFuncao: "criarSenha",
             PParametros: {
-              senha: btoa($("#ISenha").val())
+              senha: btoa($("#ISenha").val()),
             }
           },
           dataType: "json",
           success: function(data, textStatus, jqXHR) {
-            $("#PResultadoCriptografiaBlowfish").html(VInformacao + "Informação que deve ser salva no banco de dados: <b>" + data + "</b>");
-            $("#IChave").val(data);
+            $("#PChaveBlowfish").html(VInformacao + "Informação que deve ser salva no banco de dados: <b>" + data.chave + "</b>");
+            $("#IChave").val(data.chave);
             $("#ISenha2").trigger("keyup");
           }
         });
@@ -79,7 +77,7 @@ $(document).ready(function() {
       $("#PResultadoCriptografiaBlowfish").html("");
   });
 
-  // Função de validação - Ao digitar a senha e/ou a chave
+  // Função para validar a senha com a chave
   $("#ISenha2").on("keyup", function() {
     if ($("#ISenha2").val() != "" && $("#IChave").val() != "") {
       clearTimeout(VTempo);
@@ -95,14 +93,14 @@ $(document).ready(function() {
             PFuncao: "validarSenha",
             PParametros: {
               senha: btoa($("#ISenha2").val()),
-              hash: $("#IChave").val()
+              chave: $("#IChave").val()
             }
           },
           dataType: "json",
           success: function(data, textStatus, jqXHR) {
             if ($("#ISenha2").val() != "" && $("#IChave").val() != "") {
-              if (data) $("#PResultadoValidarBlowfish").html("<b>Senha válida!</b>");
-              else $("#PResultadoValidarBlowfish").html("<b>Senha inválida!</b>");
+              if (data.valida) $("#PResultadoValidarBlowfish").html(VInformacao + "<b>Senha válida!</b>");
+              else $("#PResultadoValidarBlowfish").html(VInformacao + "<b>Senha inválida!</b>");
             }
           }
         });
@@ -115,9 +113,8 @@ $(document).ready(function() {
     $("#ISenha2").trigger("keyup");
   });
 
-  ////////////////////////////////////////////////////////////
-
-  // Select com metodos
+  /* Encriptação simétrica */
+  // Função para listar Métodos
   $.ajax({
     url: "ajax.php",
     method: "POST",
@@ -127,12 +124,13 @@ $(document).ready(function() {
     dataType: "json",
     success: function(data, textStatus, jqXHR) {
       $("#SMetodo, #SMetodo2").html("");
-      for (var i = 0; i < data.length; i++) {
-        $("#SMetodo, #SMetodo2").append("<option>"+data[i]+"</option>");
+      for (var Vi = 0; Vi < data.listaMetodo.length; Vi++) {
+        $("#SMetodo, #SMetodo2").append("<option>"+data.listaMetodo[Vi]+"</option>");
       }
     }
   });
 
+  // Função para encriptar mensagem
   $("#IEncriptar").on("keyup", function() {
     if ($("#IEncriptar").val() != "" && $("#IChave2").val() != "") {
       $.ajax({
@@ -148,27 +146,32 @@ $(document).ready(function() {
         },
         dataType: "json",
         success: function(data, textStatus, jqXHR) {
-          $("#PResultadoEncriptacaoSimetrica").html("Encriptado: " + data);
-          $("#IEncriptado").val(data);
-          $("#IEncriptado").trigger("keyup");
+          if (data.encriptada != false) {
+            $("#PResultadoEncriptacaoSimetrica").html("Encriptado: " + data.encriptada);
+            $("#IEncriptado").val(data.encriptada);
+            $("#IEncriptado").trigger("keyup");
+          }
+          else
+            $("#PResultadoEncriptacaoSimetrica").html("Este método não encrepita em seu servidor!");
         }
       });
-    } else {
-      $("#PResultadoEncriptacaoSimetrica").html("Encriptado: " + data);
     }
   });
 
+  // Chave para encriptação
   $("#IChave2").on("keyup", function() {
      $("#IChave3").val($(this).val());
      $("#IEncriptar").trigger("keyup");
   });
 
+  // Método para a encriptação
   $("#SMetodo").on("change", function() {
     $("#SMetodo2 option:contains(" + $("#SMetodo option:selected").html() + ")").prop("selected", true);
     $("#IEncriptar").trigger("keyup");
   });
 
-  $("#IEncriptado").on("keyup", function() {
+  // Para desencriptar
+  $("#IEncriptado, #IChave3").on("keyup", function() {
     if ($("#IEncriptado").val() != "" && $("#IChave3").val() != "") {
       $.ajax(
       {
@@ -177,28 +180,26 @@ $(document).ready(function() {
         data: {
           PFuncao: "descriptacaoSimetrica",
           PParametros: {
-            encriptar: $("#IEncriptado").val(),
+            desencriptar: $("#IEncriptado").val(),
             chave: $("#IChave3").val(),
             metodo: $("#SMetodo2 option:selected").html()
           }
         },
         dataType: "json",
         success: function(data, textStatus, jqXHR){
-          if (data != false) $("#PResultadoDescriptacaoSimetrica").html("Descriptografado: " + data);
-          else $("#PResultadoDescriptacaoSimetrica").html("Mensagem e/ou chave está(ão) incorreta(s)!");
+          if (data.desencriptada != false) $("#PResultadoDescriptacaoSimetrica").html("Descriptografado: " + data.desencriptada);
+          else $("#PResultadoDescriptacaoSimetrica").html("Mensagem e/ou chave e/ou médoto está(ão) incorreta(s)!");
         }
       });
-
-    } else {
-      $("#PResultadoDescriptacaoSimetrica").html("Encriptado: " + data);
     }
   });
 
-  $("#IChave3").on("keyup", function() {
+  // Método para desencriptar
+  $("#SMetodo2").on("change", function() {
      $("#IEncriptado").trigger("keyup");
   });
 
-  $("#IEncriptar2").on("keyup", function() {
+  $("#IEncriptar2, #IChave4").on("keyup", function() {
     $.ajax(
     {
       url: "ajax.php",
@@ -207,18 +208,23 @@ $(document).ready(function() {
         PFuncao: "encriptacaoAsciiHexadecimal",
         PParametros: {
           encriptar: $("#IEncriptar2").val(),
+          chave: $("#IChave4").val(),
         }
       },
       dataType: "json",
       success: function(data, textStatus, jqXHR){
-        $("#PResultadoEncriptacaoHexadecimal").html("Mensagem encriptada: " + data);
-        $("#IEncriptado2").val(data);
+        $("#PResultadoEncriptacaoHexadecimal").html("Mensagem encriptada: " + data.encriptada);
+        $("#IEncriptado2").val(data.encriptada);
         $("#IEncriptado2").trigger("keyup");
       }
     });
   });
 
-  $("#IEncriptado2").on("keyup", function() {
+  $("#IChave4").on("keyup change", function() {
+    $("#IChave5").val($(this).val());
+  });
+
+  $("#IEncriptado2, #IChave5").on("keyup", function() {
     $.ajax(
     {
       url: "ajax.php",
@@ -226,14 +232,37 @@ $(document).ready(function() {
       data: {
         PFuncao: "descriptacaoAsciiHexadecimal",
         PParametros: {
-          encriptar: $("#IEncriptado2").val(),
+          desencriptar: $("#IEncriptado2").val(),
+          chave: $("#IChave5").val(),
         }
       },
       dataType: "json",
       success: function(data, textStatus, jqXHR){
-        $("#PResultadoDescriptacaoHexadecimal").html("Mensagem descriptada: " + data);
+        if (data.desencriptada != false) $("#PResultadoDescriptacaoHexadecimal").html("Descriptografado: " + data.desencriptada);
+        else $("#PResultadoDescriptacaoHexadecimal").html("Mensagem e/ou chave está(ão) incorreta(s)!");
       }
     });
+  });
+
+  /* SALT */
+  $("#IQuantidade").on("keyup", function() {
+    if ($("#IQuantidade").val() != "") {
+      $.ajax({
+        url: "ajax.php",
+        method: "POST",
+        data: {
+          PFuncao: "salt",
+          PParametros: {
+            quantidade: $("#IQuantidade").val(),
+          }
+        },
+        dataType: "json",
+        success: function(data, textStatus, jqXHR) {
+          $("#PResultadoSalt").html("Salt: <b>" + data.salt + "</b>");
+        }
+      });
+    } else
+      $("#PResultadoHash").html("");
   });
 
 });

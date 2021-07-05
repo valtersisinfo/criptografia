@@ -1,15 +1,16 @@
-# Criptografia Orientada a Objeto
+# Criptografia OO
 Criptografar e descriptografar nunca foi tão simples
 
-Pasta biblioteca - Local onde fica todas as funções:
-* salt
-* blowfish
+Pasta "biblioteca" onde estão as funções de criptografia
+* listarHash
+* obterHash
+* criarSenha (blowfish)
+* validarSenha (blowfish)
+* listarMetodos
 * encriptacaoSimetrica
 * descriptacaoSimetrica
-* pegarHash
-* listarMetodos
-* listarHash
+* encriptacaoAsciiHexadecimal
+* descriptacaoAsciiHexadecimal
+* salt
 
-Pasta exemplo - Exemplos de uso
-
-
+Pasta "exemplo" é onde eu exemplifico o uso

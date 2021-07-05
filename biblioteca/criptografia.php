@@ -1,161 +1,232 @@
 <?php
 
-  // Salt - Dado aleatório - pattern: ./A-Za-z0-9
-  function salt($parametros) {
-    // Gerar uma string pseudo-aleatória de bytes
-    $string = openssl_random_pseudo_bytes($parametros->quantidade);
-    // Codificar o pseugo-aleatório para a base 64
-    $base64 = base64_encode($string);
-    // Obter apenas os primeiros 22 dígitos
-    $substr = substr($base64, 0, $parametros->quantidade);
-    // Substituir + por .
-    $salt = str_replace("+", ".", $substr);
-    // Retornar o resultado
-    $retorno = new stdClass();
-    $retorno->salt = $salt;
-    return $salt;
-  }
+// Listar Hash
+function listarHash() {
+  $VRetorno = new stdClass();
+  $VRetorno->listaHash = hash_algos();
+  return $VRetorno;
+}
 
-  function blowfish($parametros) {
-    switch ($parametros->opcao) {
-      case 'criptografar':
-        // Parâmetros recebidos
-        $criptografar = $parametros->criptografar;
-        // HASH - SHA2 - SHA512 -Hash de 64 bytes - 128 caracteres
-        $sha512 = hash("sha512", $criptografar);
-        // Respeitar 22 digitos - pattern: ./A-Za-z0-9
-        $parametros->quantidade = 22;
-        $salt = salt($parametros);
-        // Custo - Custo do processador para criar uma criptografia BCript
-        // Custo pode ser de 04 a 31 - Deve ter 2 dígitos (04, 05, ..., 31)
-        // Lembrando que custo é a potência de 2, ou seja, quanto maior o custo, maior a segurança e o processamento
-        // 2¹³ = 8.192 ciclos
-        // 13 - https://www.dicionariodesimbolos.com.br/numero-13/
-        $custo = "13";
-        // BCript/Blowfish - Encriptação por custo de processamento
-        // $2a$ = Codificação BCript/Blowfish para obter 64 caracteres
-        $bcrypt = crypt($sha512, "$2a$".$custo."$".$salt."$");
-        // Retornar o resultado
-        $retorno = new stdClass();
-        $retorno->criptografado = $bcrypt;
-        return $retorno;
-      break;
-      case 'validar':
-        // Parâmetros recebidos
-        $validar = $parametros->validar;
-        $criptografado = $parametros->criptografado;
-        // HASH - Codificar para poder comparar com o hash
-        // SHA2 - SHA512 -Hash de 64 bytes - 128 caracteres
-        $sha512 = hash("sha512", $validar);
-        $validado = crypt($sha512, $criptografado) === $criptografado;
-        // Retornar o resultado
-        $retorno = new stdClass();
-        $retorno->validado = $validado;
-        return $retorno;
-      break;
-    }
-  }
+// Obter HASH
+// $PParametro->hash - Hash escolhido
+// $PParametro->criptografar - Informação a ser criptografada
+function obterHash($PParametro) {
+  $VRetorno = new stdClass();
+  $VRetorno->criptografado = hash($PParametro->hash, $PParametro->criptografar);
+  return $VRetorno;
+}
 
-  function encriptacaoSimetrica($parametros) {
-    // Dados a serem encriptados
-    $dados = $parametros->dados;
-    // Metodo que será utilizado
-    $metodo = $parametros->metodo;
-    // Chave para comunicação
-    $parametros->quantidade = 22;
-    $chave = salt($parametros);
-    // Opção a ser utilizada base64 = 0
-    $opcao = 0;
+// Criar senha utilizando método Blowfish
+// $PParametro->senha - Senha digitada pelo usuário
+function criarSenha($PParametro) {
+  // Obter a senha criptografada por HASH
+  $VParametro = new stdClass();
+  $VParametro->hash = "sha3-512"; // SHA3-512 - 128 caracteres
+  $VParametro->criptografar = $PParametro->senha;
+  $VParametro = obterHash($VParametro);
+  // Custo - Custo do processador para criar a criptografia BCript
+  // Custo pode ser de 04 a 31 - Deve ter 2 dígitos (04, 05, ..., 31)
+  // Lembrando que custo é a potência de 2, ou seja, quanto maior o custo, maior a segurança E o processamento
+  // 2¹³ = 8.192 ciclos
+  // 13 - https://www.dicionariodesimbolos.com.br/numero-13/
+  $VCusto = "13";
+  // BCript/Blowfish - Encriptação por custo de processamento
+  // Esta é a chave que você deve gravar no BD
+  $VChave = password_hash($VParametro->criptografado, PASSWORD_BCRYPT, ["cost" => $VCusto]);
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->chave = $VChave;
+  return $VRetorno;
+}
+
+// Validar senha
+// $PParametro->senha - Senha digitada pelo usuário
+// $PParametro->chave - Chave salva no BD
+function validarSenha($PParametro) {
+  // Obter a senha criptografada por HASH
+  $VParametro = new stdClass();
+  $VParametro->hash = "sha3-512"; // SHA3-512 - 128 caracteres
+  $VParametro->criptografar = $PParametro->senha;
+  $VParametro = obterHash($VParametro);
+  // Valida o HASH com a chave do BD
+  $VValida = password_verify($VParametro->criptografado, $PParametro->chave);
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->valida = $VValida;
+  return $VRetorno;
+}
+
+// Listar Métodos
+function listarMetodos() {
+  $VAMetodo = [];
+  foreach (openssl_get_cipher_methods() as $VMetodo) {
     // Vetor de inicialização
-    $vilen = openssl_cipher_iv_length($metodo);
-    $parametros->quantidade = $vilen;
-    $vi = salt($parametros);
-    // Encriptação dos dados
-    $encrypt = openssl_encrypt($dados, $metodo, $chave, $opcao, $vi);
-    // Retornar o resultado
-    $retorno = new stdClass();
-    $retorno->encriptado = $encrypt;
-    $retorno->chave = $chave.$vi;
-    return $retorno;
-  }
-
-  function descriptacaoSimetrica($parametros) {
-    // Metodo que será utilizado
-    $metodo = $parametros->metodo;
-    // Vetor de inicialização
-    $vi = substr($parametros->chave, 22);
-    // Classe de retorno
-    $retorno = new stdClass();
-    $retorno->descriptado = false;
-    // Verifica se bate o tamanho do vetor de inicialização
-    if (strlen($vi) == openssl_cipher_iv_length($metodo)) {
-      // Dados a serem descriptados
-      $dados = $parametros->dados;
-      // Chave para comunicação
-      $chave = substr($parametros->chave, 0, 22);
-      // Opção a ser utilizadad
-      $opcao = 0;
-      // Descriptação dos dados
-      $decrypt = openssl_decrypt($dados, $metodo, $chave, $opcao, $vi);
-      // Retorna a descriptação
-      $retorno->descriptado = $decrypt;
+    // Obter quantidade necessaria para vetor de inicialização
+    $ivlen = openssl_cipher_iv_length($VMetodo);
+    // Se este valor for diferente de zero
+    if ($ivlen != 0) {
+      // Gerar uma string pseudo-aleatória de bytes
+      if ($iv = @openssl_random_pseudo_bytes($ivlen)) {
+        $VAMetodo[] = $VMetodo;
+      }
     }
-    return $retorno;
   }
 
-  function encriptacaoHexadecimal ($parametros)
-  {
-    $letras =  str_split($descriptografado, 1);
-    $criptografia = "";
-    foreach ($letras as $letra) {
-      $ascii = ord($letra);
-      $hexadecimal = dechex($ascii);
-      if (strlen($hexadecimal) == 1) $hexadecimal = "0".$hexadecimal;
-      $criptografia .= $hexadecimal;
-    }
-    $criptografado = base64_encode($criptografia);
-    return $criptografado;
+  $VRetorno = new stdClass();
+  $VRetorno->listaMetodo = $VAMetodo;
+  return $VRetorno;
+}
+
+// Encriptação simétrica
+// $PParametro->encriptar - Mensagem que deve ser encriptada
+// $PParametro->chave - Chave de encriptamento
+// $PParametro->metodo - Método que deve ser utilizado,
+function encriptacaoSimetrica($PParametro) {
+  // Chave para encriptamento
+  $VParametro = new stdClass();
+  $VParametro->hash = "sha3-512"; // SHA3-512 - 128 caracteres
+  $VParametro->criptografar = $PParametro->chave;
+  $VParametro = obterHash($VParametro);
+  $VBase64 = base64_encode($VParametro->criptografado);
+  $VChave = str_replace("+", ".", ($VBase64));
+  // Deve ser utilizada a opção 0. base64 = 0
+  $VOpcao = 0;
+  // Vetor de inicialização
+  // Obter quantidade necessaria para vetor de inicialização
+  $VVilen = openssl_cipher_iv_length($PParametro->metodo);
+  // Completar chave com "." se necessário
+  while (strlen($VChave) < $VVilen)
+    $VChave .= ".";
+  // Selecionar a quantidade necessaria de caracteres do vetor de inicializacao
+  $VVi = substr($VChave, 0, $VVilen);
+  // Mensagem encriptada
+  $VEncriptada = openssl_encrypt($PParametro->encriptar, $PParametro->metodo, $VChave, $VOpcao, $VVi);
+
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->encriptada = $VEncriptada;
+  return $VRetorno;
+}
+
+// Descriptação simétrica
+// $PParametro->desencriptar - Mensagem que deve ser desencriptada
+// $PParametro->chave - Chave para desencriptar
+// $PParametro->metodo - Método que deve ser utilizado,
+function descriptacaoSimetrica($PParametro) {
+  // Chave para descriptar
+  $VParametro = new stdClass();
+  $VParametro->hash = "sha3-512"; // SHA3-512 - 128 caracteres
+  $VParametro->criptografar = $PParametro->chave;
+  $VParametro = obterHash($VParametro);
+  $VBase64 = base64_encode($VParametro->criptografado);
+  $VChave = str_replace("+", ".", ($VBase64));
+  // Deve ser utilizada a opção 0. base64 = 0
+  $VOpcao = 0;
+  // Vetor de inicialização
+  // Obter quantidade necessaria para vetor de inicialização
+  $VVilen = openssl_cipher_iv_length($PParametro->metodo);
+  // Completar chave com "." se necessário
+  while (strlen($VChave) < $VVilen)
+    $VChave .= ".";
+  // Selecionar a quantidade necessaria de caracteres do vetor de inicializacao
+  $VVi = substr($VChave, 0, $VVilen);
+  // Mensagem desencriptada
+  $VDesencriptada = openssl_decrypt($PParametro->desencriptar, $PParametro->metodo, $VChave, $VOpcao, $VVi);
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->desencriptada = $VDesencriptada;
+  return $VRetorno;
+}
+
+// Encriptação Ascii/Hexadecimal
+// $PParametro->encriptar - Mensagem que deve ser encriptada
+// $PParametro->chave - Chave de encriptamento
+function encriptacaoAsciiHexadecimal($PParametro) {
+  $VParametro = new stdClass();
+  $VParametro->encriptar = $PParametro->encriptar;
+  $VParametro->chave = $PParametro->chave;
+  $VParametro->metodo = "aes-256-cbc"; // Gosto de trabalhar com este método pois dá 64 caracteres
+  $VEncriptar = encriptacaoSimetrica($VParametro);
+
+  $VALetras =  str_split($VEncriptar->encriptada, 1);
+  $VEncriptada = "";
+  foreach ($VALetras as $VLetra) {
+    $VAscii = ord($VLetra);
+    $VHexadecimal = dechex($VAscii);
+    if (strlen($VHexadecimal) == 1) $VHexadecimal = "0" . $VHexadecimal;
+      $VEncriptada .= $VHexadecimal;
   }
 
-  function descriptacaoHexadecimal ($criptografado)
-  {
-    $criptografia = base64_decode($criptografado);
-    $hexadecimais =  str_split($criptografia, 2);
-    $descriptografado = "";
-    foreach ($hexadecimais as $hexadecimal) {
-      $decimal = hexdec($hexadecimal);
-      $letra = chr($decimal);
-      $descriptografado .= $letra;
-    }
-    return $descriptografado;
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->encriptada = $VEncriptada;
+  return $VRetorno;
+}
+
+// Descriptação Ascii/Hexadecimal
+function descriptacaoAsciiHexadecimal($PParametro) {
+  $VAHexadecimais =  str_split($PParametro->desencriptar, 2);
+  $VDescriptografado = "";
+  foreach ($VAHexadecimais as $VHexadecimal) {
+    $VDecimal = hexdec($VHexadecimal);
+    $VLetra = chr($VDecimal);
+    $VDescriptografado .= $VLetra;
   }
 
-  function pegarHash($parametros) {
-    // Hash requerido
-    $hash = $parametros->hash;
-    // Dados a serem hashed
-    $criptografar = $parametros->criptografar;
-    // Gerar o hash
-    $hash = hash($hash, $criptografar);
-    // Retornar o resultado
-    $retorno = new stdClass();
-    $retorno->hash = $hash;
-    return $retorno;
-  }
+  $VParametro = new stdClass();
+  $VParametro->desencriptar = $VDescriptografado;
+  $VParametro->chave = $PParametro->chave;
+  $VParametro->metodo = "aes-256-cbc"; // Gosto de trabalhar com este método pois dá 64 caracteres
+  $VRetorno = descriptacaoSimetrica($VParametro);
+  return $VRetorno;
+}
 
-  function listarMetodos() {
-    return openssl_get_cipher_methods();
-  }
+// Salt - Dado aleatório - pattern: ./A-Za-z0-9
+// $PParametro->quantidade - Quantidade desejada de caracteres
+function salt($PParametro) {
+  // Gerar uma string pseudo-aleatória de bytes
+  $VString = openssl_random_pseudo_bytes($PParametro->quantidade);
+  // Codificar o pseugo-aleatório para a base 64
+  $VBase64 = base64_encode($VString);
+  // Obtem a quantidade necessária de digitos
+  $VSubstr = substr($VBase64, 0, $PParametro->quantidade);
+  // Substituir + por . para ficar com pattern ./A-Za-z0-9
+  $VSalt = str_replace("+", ".", $VSubstr);
 
-  function listarHash() {
-    return hash_algos();
-  }
+  // Retorno
+  $VRetorno = new stdClass();
+  $VRetorno->salt = $VSalt;
+  return $VRetorno;
+}
 
-  function ajax()
-  {
-    $VResult = call_user_func($_POST["funcao"], (object)$_POST["parametros"]);
-    echo json_encode($VResult);
-    exit;
-  }
 
-  ajax();
+
+
+
+
+
+
+
+
+// Função que executa a solicitação do JQuery (Função e Parâmetros)
+function ChamaFuncaoPHP() {
+  $VFunc = $_POST["PFuncao"];
+  $VParams = new stdClass;
+  if (isset($_POST["PParametros"]))
+    if (!empty($_POST["PParametros"]))
+      $VParams = $_POST["PParametros"];
+
+  $VRetorno = call_user_func($VFunc, (object)$VParams);
+
+  if ($VRetorno == "")
+    $VRetorno = "Sem retorno";
+
+  if ($_SERVER["HTTP_ACCEPT"] == "application/json, text/javascript, */*; q=0.01")
+    echo json_encode($VRetorno);
+  else
+    echo $VRetorno;
+  exit;
+}
+
+// Chamada inicial
+ChamaFuncaoPHP();
